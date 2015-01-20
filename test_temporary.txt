@@ -1,0 +1,98 @@
+> aggdata <-aggregate(df, by=list(date), FUN=sum)
+Error in aggregate.data.frame(df, by = list(date), FUN = sum) : 
+  arguments must have same length
+> aggdata <-aggregate(df, by=list(date), FUN=sum,na.rm=TRUE)
+Error in aggregate.data.frame(df, by = list(date), FUN = sum, na.rm = TRUE) : 
+  arguments must have same length
+> head (df)
+  steps       date interval
+1    NA 2012-10-01        0
+2    NA 2012-10-01        5
+3    NA 2012-10-01       10
+4    NA 2012-10-01       15
+5    NA 2012-10-01       20
+6    NA 2012-10-01       25
+> aggdata <-aggregate(df, x=df$steps, by=list(date), FUN=sum,na.rm=TRUE)
+Error in aggregate.data.frame(as.data.frame(x), ...) : 
+  arguments must have same length
+> aggdata <-aggregate(df, x=df$steps, by=list(df$date), FUN=sum,na.rm=TRUE)
+Error in FUN(X[[1L]], ...) : invalid 'type' (list) of argument
+> aggdata <-aggregate(df, by=list(df$date), FUN=sum,na.rm=TRUE)
+Error in Summary.factor(c(1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,  : 
+  sum not meaningful for factors
+> aggdata <-aggregate(df$steps, by=list(df$date), FUN=sum,na.rm=TRUE)
+> aggdata
+
+> barplot(aggdata)
+Error in barplot.default(aggdata) : 'height' must be a vector or a matrix
+> barplot(aggdata$x)
+> aggdatamean <-aggregate(df$steps, by=list(df$date), FUN=mean,na.rm=TRUE)
+> aggdatamean
+
+> aggdatamean <-aggregate(df$steps, by=list(df$date), FUN=median,na.rm=TRUE)
+> aggdatamean
+
+
+> aggdatamean <-aggregate(df$steps, by=list(df$date), FUN=median)
+> aggdatamean
+
+> df <- read.csv("activity.csv")
+> aggdata <-aggregate(df$steps, by=list(df$date), FUN=sum,na.rm=TRUE)
+> aggdata
+
+> mean(aggdata$x)
+[1] 9354.23
+> median(aggdata$x)
+[1] 10395
+> head aggdata
+Error: unexpected symbol in "head aggdata"
+> head(aggdata)
+     Group.1     x
+1 2012-10-01     0
+2 2012-10-02   126
+3 2012-10-03 11352
+4 2012-10-04 12116
+5 2012-10-05 13294
+6 2012-10-06 15420
+> aggdataday <-aggregate(df$steps, by=list(df$interval), FUN=mean,na.rm=TRUE)
+> aggdataday
+
+> plot(aggdataday$Group.1,aggdataday$x,type="l")
+> max(aggdataday$x)
+[1] 206.1698
+> which.max(aggdataday$x)
+[1] 104
+> aggdataday[104,]
+    Group.1        x
+104     835 206.1698
+> sum(is.na(df$steps))
+
+> x <- match(df$interval,aggdataday$Group.1)
+
+> aggdataday[x,2]
+
+> reqNA <- which(is.na(df$steps))
+
+> temp <- aggdataday[x,2]
+
+> dfimput <- df
+
+> dfimput[reqNA,1] <- temp[reqNA]
+
+> aggdataim <-aggregate(dfimput$steps, by=list(df$date), FUN=sum,na.rm=TRUE)
+
+> barplot(aggdataim$x)
+
+> mean(aggdataim$x)
+
+> median(aggdataim$x)
+
+> sum(aggdataim[2]-aggdata[2])
+
+> df$dayofweek <- weekdays(as.Date(df$date))
+
+> df[df$dayofweek %in% c('sabato','domenica'),5] <- c('weekend')
+
+> df[!df$dayofweek %in% c('sabato','domenica'),5] <- c('weekday')
+
+> df$V5 <- as.factor(df$V5)
