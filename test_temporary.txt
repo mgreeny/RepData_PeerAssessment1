@@ -1,98 +1,59 @@
-> aggdata <-aggregate(df, by=list(date), FUN=sum)
-Error in aggregate.data.frame(df, by = list(date), FUN = sum) : 
-  arguments must have same length
-> aggdata <-aggregate(df, by=list(date), FUN=sum,na.rm=TRUE)
-Error in aggregate.data.frame(df, by = list(date), FUN = sum, na.rm = TRUE) : 
-  arguments must have same length
-> head (df)
-  steps       date interval
-1    NA 2012-10-01        0
-2    NA 2012-10-01        5
-3    NA 2012-10-01       10
-4    NA 2012-10-01       15
-5    NA 2012-10-01       20
-6    NA 2012-10-01       25
-> aggdata <-aggregate(df, x=df$steps, by=list(date), FUN=sum,na.rm=TRUE)
-Error in aggregate.data.frame(as.data.frame(x), ...) : 
-  arguments must have same length
-> aggdata <-aggregate(df, x=df$steps, by=list(df$date), FUN=sum,na.rm=TRUE)
-Error in FUN(X[[1L]], ...) : invalid 'type' (list) of argument
-> aggdata <-aggregate(df, by=list(df$date), FUN=sum,na.rm=TRUE)
-Error in Summary.factor(c(1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,  : 
-  sum not meaningful for factors
-> aggdata <-aggregate(df$steps, by=list(df$date), FUN=sum,na.rm=TRUE)
-> aggdata
-
-> barplot(aggdata)
-Error in barplot.default(aggdata) : 'height' must be a vector or a matrix
-> barplot(aggdata$x)
-> aggdatamean <-aggregate(df$steps, by=list(df$date), FUN=mean,na.rm=TRUE)
-> aggdatamean
-
-> aggdatamean <-aggregate(df$steps, by=list(df$date), FUN=median,na.rm=TRUE)
-> aggdatamean
+setwd("C:/users-data/sa058556/Documents/Personale/Coursera/Rep_research")
+library(lattice)
+df <- read.csv("activity.csv")
 
 
-> aggdatamean <-aggregate(df$steps, by=list(df$date), FUN=median)
-> aggdatamean
+aggdata <-aggregate(df$steps, by=list(df$date), FUN=sum,na.rm=TRUE)
+aggdata
 
-> df <- read.csv("activity.csv")
-> aggdata <-aggregate(df$steps, by=list(df$date), FUN=sum,na.rm=TRUE)
-> aggdata
+barplot(aggdata$x)
 
-> mean(aggdata$x)
-[1] 9354.23
-> median(aggdata$x)
-[1] 10395
-> head aggdata
-Error: unexpected symbol in "head aggdata"
-> head(aggdata)
-     Group.1     x
-1 2012-10-01     0
-2 2012-10-02   126
-3 2012-10-03 11352
-4 2012-10-04 12116
-5 2012-10-05 13294
-6 2012-10-06 15420
-> aggdataday <-aggregate(df$steps, by=list(df$interval), FUN=mean,na.rm=TRUE)
-> aggdataday
+mean(aggdata$x)
+median(aggdata$x)
+aggdataday <-aggregate(df$steps, by=list(df$interval), FUN=mean,na.rm=TRUE)
+aggdataday
 
-> plot(aggdataday$Group.1,aggdataday$x,type="l")
-> max(aggdataday$x)
-[1] 206.1698
-> which.max(aggdataday$x)
-[1] 104
-> aggdataday[104,]
-    Group.1        x
-104     835 206.1698
-> sum(is.na(df$steps))
+plot(aggdataday$Group.1,aggdataday$x,type="l")
+max(aggdataday$x)
+which.max(aggdataday$x)
+##[1] 104
+aggdataday[104,]
+##    Group.1        x
+## 104     835 206.1698
+#count total NAs
+sum(is.na(df$steps))
+#get index of interval
+x <- match(df$interval,aggdataday$Group.1)
+#get index of NAs rows
+reqNA <- which(is.na(df$steps))
+#get vector of means by interval
+temp <- aggdataday[x,2]
+#copy original data frame
+dfimput <- df
+#replace NAs
+dfimput[reqNA,1] <- temp[reqNA]
 
-> x <- match(df$interval,aggdataday$Group.1)
+aggdataim <-aggregate(dfimput$steps, by=list(df$date), FUN=sum,na.rm=TRUE)
 
-> aggdataday[x,2]
+barplot(aggdataim$x)
 
-> reqNA <- which(is.na(df$steps))
+mean(aggdataim$x)
 
-> temp <- aggdataday[x,2]
+median(aggdataim$x)
 
-> dfimput <- df
+#verify difference between pre and post imputing
+sum(aggdataim[2]-aggdata[2])
 
-> dfimput[reqNA,1] <- temp[reqNA]
+dfimput$dayofweek <- weekdays(as.Date(dfimput$date))
 
-> aggdataim <-aggregate(dfimput$steps, by=list(df$date), FUN=sum,na.rm=TRUE)
+dfimput[dfimput$dayofweek %in% c('sabato','domenica'),5] <- c('weekend')
 
-> barplot(aggdataim$x)
+dfimput[!dfimput$dayofweek %in% c('sabato','domenica'),5] <- c('weekday')
 
-> mean(aggdataim$x)
+dfimput$V5 <- as.factor(dfimput$V5)
 
-> median(aggdataim$x)
+#densityplot(~df$steps|df$V5,main="Density Plot by Numer of Cylinders",xlab="Miles per Gallon",layout=c(1,2))
 
-> sum(aggdataim[2]-aggdata[2])
+aggdatawkday <-aggregate(dfimput$steps, by=list(dfimput$V5,dfimput$interval), FUN=mean,na.rm=TRUE)
 
-> df$dayofweek <- weekdays(as.Date(df$date))
-
-> df[df$dayofweek %in% c('sabato','domenica'),5] <- c('weekend')
-
-> df[!df$dayofweek %in% c('sabato','domenica'),5] <- c('weekday')
-
-> df$V5 <- as.factor(df$V5)
+xyplot(aggdatawkday$x~aggdatawkday$Group.2|aggdatawkday$Group.1,main="",layout=c(1,2),type="l",xlab="Interval",ylab="Number of steps")
